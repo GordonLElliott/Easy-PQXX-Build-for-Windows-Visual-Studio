@@ -1,11 +1,11 @@
 Easy-PQXX-Build-for-Windows-Visual-Studio (0.0.1)
------------------------------------------
+-------------------------------------------------
 
 Build libpqxx for Windows quickly, with both Debug and Release
 configurations, install in Program Files, create property sheets to easily
 use in Visual Studio applications, with named versions for configurations
-and options. Skip past the notes to **Batch Build for Visual Studio** to
-jump right in with:
+and options. Skip past the notes to **Easy-PQXX Batch Build for Visual
+Studio** to jump right in with:
 
 1. Automated batch file to build and install in the selected location
    (typically C:\Program Files\libpqxx), asking for administrator
@@ -141,8 +141,8 @@ if %errorlevel%==0  cmake --install build --config Release --prefix "libpqxx/Rel
 pause
 ```
 
-Easy Batch Build for Visual Studio
-----------------------------------
+Easy-PQXX Batch Build for Visual Studio
+---------------------------------------
 
 The batch file 'Easy-PQXX.bat' supplied here does basically the same thing
 as the last example above, building libpqxx with both Release and Debug
@@ -169,6 +169,14 @@ top level directory for the install.
 batch file can recursively run itself as administrator for the last
 installation step (just using xcopy), but that gives the batch file
 privileges to do almost anything!**
+
+To activate the batch file (in the top-level subdirectory for the project)
+just click (or double click) the file. It will open in a command window,
+and has a pause at the end so you can read the results. After build it may
+ask permissions to run in administrative mode to do the final copy to the
+Program Files directory. After giving permission, a yellow background
+command window is doing the final copy. Then hit a key to end each window,
+after checking for proper operation.
  
 This batch file first configures the build, compiles the libraries (both
 Release and Debug as selected), but in separate local pre-installation
@@ -181,3 +189,52 @@ added to contain the external PostgreSQL libraries and DLL files required
 for applications using the libpqxx library. Property page files are also
 added to this directory, which can be used in Visual Studio projects to
 easily reference the libraries and DLL files needed.
+
+Using the PQXX Library
+----------------------
+
+Create your new project in Visual Studio. (Often a completely new project
+will be required, because the changes are significant from previous
+versions if you are upgrading old work. For example you don't need to
+provide locations for libraries and include files any more!)
+
+The first setting that is **required** is to change your C++ Language
+Standard to ISO C++ 17. (We can't do that from Property Pages.)
+
+Then in the "Property Manager" tab, select each of your Debug and Release
+versions (in sequence). Right click and "Add Existing Property Sheet".
+Unfortunately VS seems to forget where you were, so you have to click
+around to the install directory each time. Find the appropriately named
+subdirectory of the libpqxx install directory, for the respective build
+library to be used. At the base of that directory are three property sheets
+(.props) named libpqxx, libpqxx-ALL, and libpqxx-DLL. The first is just the
+library (no DLL). The -DLL version just copies the DLL's to your executable
+directory as a post-build event. And the -ALL version does it all. Select
+the libpqxx-ALL.props sheet. (You need to do this for both the Debug and
+the Release configurations, but use the same property sheet for both.)
+ 
+Then compile your application! (Thats all.)
+
+You can switch your application between Debug and Release configurations
+and the correctly built library is chosen automatically.
+
+(If you are building both x64 and Win32 versions of your application, you
+will have to configure a 2nd copy of the batch file for Win32, and the
+output libraries will appear in a separate subdirectory of the libpqxx
+installation. When adding property sheets, add the sheets from the
+appropriate subdirectory in the respective configuration from the Property
+Manager.)
+
+Note that the installation directory looks like this:
+```
+bin
+include
+lib
+libpqxx.props
+libpqxx_ALL.props
+libpqxx_DLL.props
+share
+```
+
+The lib subdirectory is different from the normal libpqxx make, since it
+contains separate Debug and Release subdirectories, each with a library. 
