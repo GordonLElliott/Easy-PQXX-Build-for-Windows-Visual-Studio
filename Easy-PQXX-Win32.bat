@@ -93,9 +93,9 @@ SET PQXX_VERSION=master
 :: which DLL files are copied for use in the post build event in the
 :: Property Pages files. This is also used to construct the location of the
 :: PostgreSQL database installation.
-SET POSTGRES_VERSION=12
+REM SET POSTGRES_VERSION=12
 REM SET POSTGRES_VERSION=11
-REM SET POSTGRES_VERSION=10
+SET POSTGRES_VERSION=10
 
 
 :: leave these lines in... PROGRAMFILES block.... -------------------->> ::
@@ -127,7 +127,7 @@ echo PROGRAMFILES_64_BIT=%PROGRAMFILES_64_BIT%
 :: some input directories. Uncomment one or the other here by removing the
 :: "REM" word. Default, next, is to use the same as your operating system.
 REM SET PLATFORM=x64
-REM SET PLATFORM=Win32
+SET PLATFORM=Win32
 :: ------------------------------------------------------------------->> ::
 if not defined PLATFORM (
     if %OS_64_BIT% neq 0 (SET PLATFORM=x64) else (SET PLATFORM=Win32)
