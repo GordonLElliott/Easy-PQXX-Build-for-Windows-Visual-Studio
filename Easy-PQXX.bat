@@ -440,6 +440,15 @@ if %VERBOSE% neq 0 (
     set VERBOSE_FLG=
 )
 
+:: For use in Robocopy or xcopy
+if %VERBOSE% neq 0 (
+    set VERBOSE_VFLG=/v
+) else (
+    set VERBOSE_VFLG=
+)
+
+
+
 if not defined PAUSE_AT_END (
     set PAUSE_AT_END=1
 )
@@ -759,8 +768,8 @@ if %BUILD_RELEASE% neq 0 (
 
 :: Copy specified list of library and DLL files to newly created bin
 :: subdirectory of the install.
-robocopy /v "%POSTGRES_LOCATION%/lib" "%LOCAL_INSTALL%/%INSTALL_SUBDIRECTORY%/bin" libpq.lib /r:0
-robocopy /v "%POSTGRES_LOCATION%/bin" "%LOCAL_INSTALL%/%INSTALL_SUBDIRECTORY%/bin" %POSTGRES_DLLS% /r:0
+robocopy %VERBOSE_VFLG% "%POSTGRES_LOCATION%/lib" "%LOCAL_INSTALL%/%INSTALL_SUBDIRECTORY%/bin" libpq.lib /r:0
+robocopy %VERBOSE_VFLG% "%POSTGRES_LOCATION%/bin" "%LOCAL_INSTALL%/%INSTALL_SUBDIRECTORY%/bin" %POSTGRES_DLLS% /r:0
 echo The bin directory copy, robocopy return value %errorlevel%.
 if %errorlevel% gtr 8 goto :error
 
@@ -815,8 +824,6 @@ if exist "%FINAL_INSTALL_DIRECTORY%\" (
     echo "Created: %FINAL_INSTALL_DIRECTORY% with errorlevel: !errorlevel!"
     if !errorlevel! neq 0 goto :error
 )
-:: Question on last IF. Probably resolved with the exclamation point form
-:: of errorlevel.
 
 if not exist "%FINAL_INSTALL_DIRECTORY%\" (
     echo "After creating final directory: %FINAL_INSTALL_DIRECTORY%"
@@ -857,8 +864,8 @@ echo **********************************************************************
 :: furthermore have a defined final install directory:
 :: Removed xcopy  with  /c /s /e /y /i to robocopy with /MIR /R:0 
 if defined FINAL_INSTALL_DIRECTORY (
-    xcopy "%LOCAL_INSTALL%/%INSTALL_SUBDIRECTORY%" "%FINAL_INSTALL_DIRECTORY%/%INSTALL_SUBDIRECTORY%" /s /e /y /i /d
-    echo The robocopy or xcopy error: !errorlevel!
+    xcopy %VERBOSE_VFLG% "%LOCAL_INSTALL%/%INSTALL_SUBDIRECTORY%" "%FINAL_INSTALL_DIRECTORY%/%INSTALL_SUBDIRECTORY%" /s /e /y /i /d
+    echo The xcopy error: !errorlevel!
     if !errorlevel! gtr 1 goto :error
     echo:
     echo Examine above for errors...
@@ -896,32 +903,14 @@ if "%params%" equ "" (
     goto :exiting
 
 
-echo *********************************************************************
-echo *                Trigger recursive call as administrator            *
-echo *********************************************************************
-rem setlocal
-    echo params: %params%
-    :: Variable 'params' must be defined as the command line parameters.
-    :: This MUST not be blank -- or recursive calling will occur.
-
-    :: Removing "%temp%\getadmin.vbs" to "getadmin.vbs"
-
-    :: Here we run special program to get privileges, and recursively call
-    :: this same batch file with an argument:
-    echo Set UAC = CreateObject^("Shell.Application"^) > "getadmin.vbs"
-    echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params:"=""%", "", "runas", 1 >> "getadmin.vbs"
-
-    echo CALLing final installation with privileges....
-    "getadmin.vbs"
-    rem erase "getadmin.vbs"
-    goto :exiting
-
-
+:: ************************************************************************
+:: *   :generatePropertyPage callable routine to generate Property Page   *
+:: ************************************************************************
 
 :: :generatePropertyPage callable batch segment produces a property page
 :: for libpqxx, according to call arguments:
 
-:: 1. %1 is integer 0 no library entries, 1 point to libraries.
+:: 1. %1 is integer 0 no library entries, 1 point to libraries, includes.
 :: 2. %2 is integer 0 no copy of the DLL files, 1 copy DLL files.
 :: 3. %3 is (probably quoted) output location and file name for the .props
 ::    property page.
@@ -935,6 +924,10 @@ if %2 neq 0 (set DLLP=DLLs) else (set DLLP=No DLLs)
 echo Build property page with %LIBP% and %DLLP%, located at:
 echo:%~3
 
+:: Note the special escape ^^! is because we EnableDelayedExpansion, and
+:: the first ^ is quoted in the parenthetical capture and the remaining ^
+:: escapes the ! which normally delimits delayed expansion variable.
+:: Without this the ! disappears.
 
 (
 echo ^<?xml version="1.0" encoding="utf-8"?^>
@@ -1004,6 +997,9 @@ goto :EOF
 :error
 set _errorlevel=%errorlevel%
 color 4f
+echo **********************************************************************
+echo *                          Error Occurred                            *
+echo **********************************************************************
 echo Failed with error #%_errorlevel%, at %time% *** %~1>> build_time_log.txt
 echo Failed with error #%_errorlevel%.
 if %PAUSE_AT_END% neq 0 pause
