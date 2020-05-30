@@ -1,4 +1,4 @@
-Easy-PQXX-Build-for-Windows-Visual-Studio
+Easy-PQXX-Build-for-Windows-Visual-Studio (0.0.1)
 -----------------------------------------
 
 Build libpqxx for Windows quickly, with both Debug and Release

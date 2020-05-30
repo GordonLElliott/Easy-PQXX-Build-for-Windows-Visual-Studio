@@ -1,4 +1,5 @@
 REM Build and install pqxx library using CMake and source code files.
+REM Version 0.0.1
 :: ************************************************************************
 :: This batch file builds and then installs the pqxx library (libpqxx), for
 :: Microsoft Visual Studio on Windows. It should work for any version of
