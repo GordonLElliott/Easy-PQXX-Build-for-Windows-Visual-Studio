@@ -1,7 +1,8 @@
 Easy-PQXX Build for Windows Visual Studio (0.0.3)
 -------------------------------------------------
 
-Build libpqxx for Windows quickly, with both Debug and Release
+[PQXX](http://pqxx.org/development/libpqxx/) is the C++ connector for
+PostgreSQL. Build libpqxx for Windows quickly, with both Debug and Release
 configurations, install in Program Files, create property sheets to easily
 use in Visual Studio applications, with named versions for configurations
 and options. Skip past the notes to [Easy-PQXX Batch Build for Visual
