@@ -207,10 +207,10 @@ Unfortunately VS seems to forget where you were, so you have to click
 around to the install directory each time. Find the appropriately named
 subdirectory of the libpqxx install directory, for the respective build
 library to be used. At the base of that directory are three property sheets
-(.props) named libpqxx, libpqxx-ALL, and libpqxx-DLL. The first is just the
-library (no DLL). The -DLL version just copies the DLL's to your executable
-directory as a post-build event. And the -ALL version does it all. Select
-the libpqxx-ALL.props sheet. (You need to do this for both the Debug and
+(.props) named libpqxx, libpqxx_ALL, and libpqxx_DLL. The first is just the
+library (no DLL). The _DLL version just copies the DLL's to your executable
+directory as a post-build event. And the _ALL version does it all. Select
+the libpqxx_ALL.props sheet. (You need to do this for both the Debug and
 the Release configurations, but use the same property sheet for both.)
  
 Then compile your application! (Thats all.)
