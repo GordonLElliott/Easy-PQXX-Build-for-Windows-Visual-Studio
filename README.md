@@ -1,11 +1,11 @@
-Easy-PQXX-Build-for-Windows-Visual-Studio (0.0.3)
+Easy-PQXX Build for Windows Visual Studio (0.0.3)
 -------------------------------------------------
 
 Build libpqxx for Windows quickly, with both Debug and Release
 configurations, install in Program Files, create property sheets to easily
 use in Visual Studio applications, with named versions for configurations
-and options. Skip past the notes to **Easy-PQXX Batch Build for Visual
-Studio** to jump right in with:
+and options. Skip past the notes to [Easy-PQXX Batch Build for Visual
+Studio](#easy-pqxx-batch-build-for-visual-studio) to jump right in with:
 
 1. Automated batch file to build and install in the selected location
    (typically C:\Program Files\libpqxx), asking for administrator
@@ -46,11 +46,10 @@ Visual Studio. Only Visual Studio 2017 and later support the C++ 17
 standard required by libpqxx 7. And libpqxx version 7 can most easily be
 compiled for Visual Studio using the CMake build process.
  
-Unfortunately there are a few bugs and pitfalls in the CMake process, which
-show up in Windows. The methods here show how to get past those problems if
-they occur for you, and a configurable batch file is presented which will
-fully automate the installation of the libpqxx library with options and
-features discussed in the introduction.
+The methods here show how to get past Windows install problems if they
+occur for you, and a configurable batch file is presented which will fully
+automate the installation of the libpqxx library with options and features
+discussed in the introduction.
 
 Basics of the Cmake Build for Visual Studio
 -------------------------------------------
@@ -141,6 +140,11 @@ if %errorlevel%==0  cmake --install build --config Release --prefix "libpqxx/Rel
 pause
 ```
 
+If you wanted the final installation in the `C:\Program Files\libpqxx`
+directory, you could just copy and paste the libpqxx subdirectory created
+above into your Program Files directory--and Windows will ask for
+permissions. 
+
 Easy-PQXX Batch Build for Visual Studio
 ---------------------------------------
 
@@ -149,10 +153,13 @@ as the last example above, building libpqxx with both Release and Debug
 libraries, but also creates appropriate property sheet for use of the
 library, installs the libraries and DLLs in a standardized location
 (usually C:\Program Files\libpqxx), and automatically asks for admin
-privileges. Furthermore it organizes the installation as a single directory
-with include and 'share' directories (with documentation), but the lib
-directory has both a Debug and Release subdirectory with the respective
-library.
+privileges. It places the library in a named subdirectory of libpqxx
+install, so that variously configured installs have different names.
+Furthermore it organizes the installation as a single directory with
+include and 'share' directories (with documentation), but the lib directory
+has both a Debug and Release subdirectory with the respective library. (The
+simplified example above wound up with two copies of the include and the
+documentation directories.)
 
 This batch file has a top section to allow the user to configure the build.
 As noted in the batch file, it should be copied to the top level directory
@@ -167,8 +174,9 @@ top level directory for the install.
 
 **Please do not change the operations sections of this batch file! This
 batch file can recursively run itself as administrator for the last
-installation step (just using xcopy), but that gives the batch file
-privileges to do almost anything!**
+installation step (which just xcopy to place files), but that gives the
+batch file privileges to do almost anything. Making changes if you do not
+completely understand them can have unexpected results.**
 
 To activate the batch file (in the top-level subdirectory for the project)
 just click (or double click) the file. It will open in a command window,
@@ -179,7 +187,7 @@ command window is doing the final copy. Then hit a key to end each window,
 after checking for proper operation.
  
 This batch file first configures the build, compiles the libraries (both
-Release and Debug as selected), but in separate local pre-installation
+Release and Debug as selected), but in separate local pre-installation work
 directories. The CMake methods are only configured to do this as separate
 file groupings. Then the batch file copies the separate installations into
 a singe coherent directory with just one include subdirectory, just one
@@ -187,8 +195,8 @@ a singe coherent directory with just one include subdirectory, just one
 subdivided by Debug and Release folders. Another subdirectory, 'bin' is
 added to contain the external PostgreSQL libraries and DLL files required
 for applications using the libpqxx library. Property page files are also
-added to this directory, which can be used in Visual Studio projects to
-easily reference the libraries and DLL files needed.
+provided, which can be used in Visual Studio projects to easily reference
+the libraries and DLL files needed.
 
 Using the PQXX Library
 ----------------------
@@ -240,26 +248,27 @@ The lib subdirectory is different from the normal libpqxx make, since it
 contains separate Debug and Release subdirectories, each with a library.
 The libpqxx_ALL.props property page causes the application to refer to the
 library, the include files, and also copy the DLLs for PostgreSQL to the
-execute directory. THe libpqxx.props refers to the
-library, the include files, but does not copy the DLLs. The
-libpqxx_DLL.props property page only copies the DLLs. (This last can be
-used in the test suite generated in the CMake build.)
+execute directory. The libpqxx.props refers to the library, the include
+files, but does not copy the DLLs. The libpqxx_DLL.props property page only
+copies the DLLs. (This last can be used in the test suite generated in the
+CMake build to get it going quickly.)
 
-Running Test Suite
-------------------
+Running the Test Suite
+----------------------
 
-In the configured build is a test suite with project name "runner". To run
-this test suite to test the build, some steps need to be done. Note that
-the build inserts references to the local copies of the library and insert
-path from the build source and build directories. However it may not have
-available the  DLL files from PostgreSQL. 
+In the configured Visual Studio solution is a test suite with project name
+"runner". To run this test suite to test the build, some steps need to be
+done in this Windows version. Note that the build inserts references to the
+local copies of the library and references the insert files path from the
+build source and build directories. However the executable may not have
+available the DLL files from PostgreSQL. 
 
 Those DLLs could be made available by putting the bin directory of the
 PostgreSQL installation of the Program Files directory into the path for
-the local user. This has an advantage of providing access to psql utility,
-for example, in any open command window without special environment
-settings. However this may also become troublesome if you have both 64 and
-32 bit versions of PostgreSQL installed, for example.
+the local user. (This has an advantage of providing access to the `psql`
+utility, for example, in any open command window without special
+environment settings.) However this may also become troublesome if you have
+both 64 and 32 bit versions of PostgreSQL installed, for example.
 
 Another way to provide those DLLs with little effort is to use the property
 page for the respective compile to load the DLLs with the runner
@@ -275,7 +284,7 @@ but I just choose the local install subdirectory matching the installation
 type, since it is in a fixed relative position to the library build, like
 the other files used in this test project.
 
-Then you need to find or create a PostgreSQL database to let the testing
+Then you need to find or create a PostgreSQL database for the testing
 application play in. To connect that, set the environment variables, here
 shown on the local PostgreSQL server. Of course use the appropriate values
 for these variables, especially the name of the testing database you have
@@ -291,12 +300,11 @@ PGUSER=postgres
 To do this, find the project properties debugging environment
 configuration.
 
-You may have to add PGPASSWORD= setting to the list if you don't have a
+You may have to add `PGPASSWORD=` setting to the list if you don't have a
 pgpass.conf file configured for applications (like .pgpass on Linux). (See
 https://www.postgresql.org/docs/current/libpq-pgpass.html for pgpass file
 configuration.) But be forewarned placing the password in your program is
-probably a security risk, the pgpass file
-is probably better.
+probably a security risk, the pgpass file is probably better.
 
 With only the Property Page for the DLL include added to the runner
 application, and the environment variables supplied above, the runner test
