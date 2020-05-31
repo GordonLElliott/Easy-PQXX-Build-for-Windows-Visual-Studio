@@ -1,4 +1,4 @@
-Easy-PQXX-Build-for-Windows-Visual-Studio (0.0.1)
+Easy-PQXX-Build-for-Windows-Visual-Studio (0.0.3)
 -------------------------------------------------
 
 Build libpqxx for Windows quickly, with both Debug and Release
@@ -237,4 +237,11 @@ share
 ```
 
 The lib subdirectory is different from the normal libpqxx make, since it
-contains separate Debug and Release subdirectories, each with a library. 
+contains separate Debug and Release subdirectories, each with a library.
+The libpqxx_ALL.props property page causes the application to refer to the
+library, the include files, and also copy the DLLs for PostgreSQL to the
+execute directory. THe libpqxx.props refers to the
+library, the include files, but does not copy the DLLs. The
+libpqxx_DLL.props property page only copies the DLLs. (This last can be
+used in the test suite generated in the CMake build.)
+
