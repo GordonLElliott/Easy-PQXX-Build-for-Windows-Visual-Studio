@@ -245,3 +245,59 @@ library, the include files, but does not copy the DLLs. The
 libpqxx_DLL.props property page only copies the DLLs. (This last can be
 used in the test suite generated in the CMake build.)
 
+Running Test Suite
+------------------
+
+In the configured build is a test suite with project name "runner". To run
+this test suite to test the build, some steps need to be done. Note that
+the build inserts references to the local copies of the library and insert
+path from the build source and build directories. However it may not have
+available the  DLL files from PostgreSQL. 
+
+Those DLLs could be made available by putting the bin directory of the
+PostgreSQL installation of the Program Files directory into the path for
+the local user. This has an advantage of providing access to psql utility,
+for example, in any open command window without special environment
+settings. However this may also become troublesome if you have both 64 and
+32 bit versions of PostgreSQL installed, for example.
+
+Another way to provide those DLLs with little effort is to use the property
+page for the respective compile to load the DLLs with the runner
+application. Open the libpqxx.sln solution in the build subdirectory with
+the Visual Studio IDE. The DLL only property page will be used. However we
+are lucky that there is only one architecture specified in the libpqxx
+projects, so one property page insertion can apply to all the
+sub-configurations. In the Property Manager tab, look for the 'runner'
+application. Right click on that (as a whole, not its individual
+configurations) and right click and pick Add Existing Property Sheet. You
+could use the libpqxx_DLL.props property sheet from the final installation,
+but I just choose the local install subdirectory matching the installation
+type, since it is in a fixed relative position to the library build, like
+the other files used in this test project.
+
+Then you need to find or create a PostgreSQL database to let the testing
+application play in. To connect that, set the environment variables, here
+shown on the local PostgreSQL server. Of course use the appropriate values
+for these variables, especially the name of the testing database you have
+chosen, and appropriate user. 
+
+```
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=testing
+PGUSER=postgres
+```
+
+To do this, find the project properties debugging environment
+configuration.
+
+You may have to add PGPASSWORD= setting to the list if you don't have a
+pgpass.conf file configured for applications (like .pgpass on Linux). (See
+https://www.postgresql.org/docs/current/libpq-pgpass.html for pgpass file
+configuration.) But be forewarned placing the password in your program is
+probably a security risk, the pgpass file
+is probably better.
+
+With only the Property Page for the DLL include added to the runner
+application, and the environment variables supplied above, the runner test
+suite should run correctly by starting from the Visual Studio IDE.
