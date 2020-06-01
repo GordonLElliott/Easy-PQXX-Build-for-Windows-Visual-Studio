@@ -78,7 +78,8 @@ database](https://www.postgresql.org/download/windows/) must also be
 installed, version 12 preferred but at least version 10.) In this method
 you put the input source files subdirectory (`libpqxx-master` or
 `libpqxx-<version>`) into the top-level directory. Then in this top-level
-directory execute the following two commands:
+directory execute the following two commands (adjusting the name of the
+input source accordingly):
 
 ```
 cmake -S libpqxx-master -B build -DCMAKE_INSTALL_PREFIX="libpqxx"
@@ -87,7 +88,7 @@ cmake -S libpqxx-master -B build -DCMAKE_INSTALL_PREFIX="libpqxx"
 This constructs a Visual Studio solution with multiple projects and CMake
 build information, in the 'build' subdirectory, but does not build those
 projects. The CMAKE_INSTALL_PREFIX parameter establishes the final install
-directory in advance as a third subdirectory 'libpqxx', of the build
+directory in advance as a third subdirectory 'libpqxx', of the top level
 directory. This cannot be located in the protected Program Files directory
 without running CMake as administrator. Leaving off the
 CMAKE_INSTALL_PREFIX parameter usually causes CMake to default to
@@ -139,26 +140,27 @@ pause
 Any changes can be made by clicking the batch build file again and only
 necessary changes will be compiled, as is normal for a "make" process.
  
-Flags that can be added on the first cmake line include: `-A x64` or `-A
+Flags that can be added on the first `cmake` line include: `-A x64` or `-A
 Win32` These will select the target architecture as 64 or 32 bit. `-G
 "Visual Studio 15 2017"`  may be used to select the 2017 version of Visual
 Studio, or explicitly select `-G "Visual Studio 16 2019"` (default  if
 installed). The architecture and generator parameter values must be exactly
-as shown. Use `-DPostgreSQL_ROOT="C:\Program Files\PostgreSQL\12"`   to
-select the version of PostgreSQL at the specified location. To compile for
-Win32, the `"C:\Program Files (x86)\PostgreSQL\10"` version of libpq will
-probably be required from the x86 directory (and include `-A Win32`). These
-flags can also be added to the first cmake line in the example below.
+as shown. Use 
+`-DPostgreSQL_ROOT="C:\Program Files\PostgreSQL\12"`
+to select the version of PostgreSQL at the specified location. To compile
+for Win32, the `"C:\Program Files (x86)\PostgreSQL\10"` version of libpq
+will probably be required from the x86 directory (and include `-A Win32`).
+These flags can also be added to the first `cmake` line in the example below.
 
-The second (build) cmake command can also have: `--config Release` to
+The second (build) `cmake` command can also have: `--config Release` to
 switch the install from a Debug to a Release configuration.
 
-The build cmake line can also have, at the very end, `--
+The build `cmake` line can also have, at the very end, `--
 /property:CharacterSet=Unicode` to change the character set from MultiByte
 to Unicode. That flag (including the `--` separated by spaces at the end
-before the added flag) can also be applied in the 2nd and 3rd cmake build
+before the added flag) can also be applied in the 2nd and 3rd `cmake` build
 lines in the example below to change the character set, and the added flag
-is passed directly to the native compiler tool without cmake interpreting
+is passed directly to the native compiler tool without `cmake` interpreting
 it.
 
 A slightly more complex sequence of commands will build (completely
@@ -174,7 +176,7 @@ if %errorlevel%==0  cmake --install build --config Release --prefix "libpqxx/Rel
 pause
 ```
 See the notes above for added flags that can be used in this example as
-well. (Note most flags listed above go on the first cmake line, but the
+well. (Note most flags listed above go on the first `cmake` line, but the
 character set flags go at the end of the two `--build` lines.)
 
 If you copy the `basic_libpqxx.props` property sheet from this repository
@@ -224,6 +226,15 @@ has both a Debug and Release subdirectory with the respective library. (The
 simplified example above wound up with two copies of the include and the
 documentation directories.)
 
+Two other batch files are provided in this repository:
+`Easy-PQXX-x64Unicode.bat` is pre-configured for Unicode character set.
+`Easy-PQXX-Win32.bat` is pre-configured for Win32 (x86) compiling. The
+latter has the typical 32 bit PostgreSQL location selected. In both cases
+the user may have to do some configuration changes to adapt the use. The
+`Easy-PQXX.bat` is always the master copy, and these are derived by copying
+that and changing one or more settings. If there is ever a disparity, the
+one with no suffix is the maintained copy.
+
 This batch file has a top section to allow the user to configure the build.
 As noted in the batch file, it should be copied to the top level directory
 used to build the libpqxx system, **using your favorite programming text
@@ -270,7 +281,7 @@ versions if you are upgrading old work. For example you don't need to
 provide locations for libraries and include files any more!)
 
 The first setting that is **required** is to change your C++ Language
-Standard to ISO C++ 17. (We can't do that from Property Pages.)
+Standard to ISO C++ 17. (We can't do that from Property Sheets.)
 
 Then in the "Property Manager" tab, select each of your Debug and Release
 versions (in sequence). Right click and "Add Existing Property Sheet".
