@@ -1,12 +1,13 @@
-Easy-PQXX Build for Windows Visual Studio (0.0.3)
+Easy-PQXX Build for Windows Visual Studio (0.0.4)
 -------------------------------------------------
 
-[PQXX](http://pqxx.org/development/libpqxx/) is the C++ connector for
-PostgreSQL. Build libpqxx for Windows quickly, with both Debug and Release
-configurations, install in Program Files, create property sheets to easily
-use in Visual Studio applications, with named versions for configurations
-and options. Skip past the notes to [Easy-PQXX Batch Build for Visual
-Studio](#easy-pqxx-batch-build-for-visual-studio) to jump right in with:
+[PQXX](http://pqxx.org/development/libpqxx/) is the C++ connector library
+for PostgreSQL. Build the libpqxx library for Windows quickly, with both
+Debug and Release configurations, install in Program Files, create property
+sheets to easily use in Visual Studio applications, with named versions for
+configurations and options. Skip past the notes to [Easy-PQXX Batch Build
+for Visual Studio](#easy-pqxx-batch-build-for-visual-studio) to jump right
+in with:
 
 1. Automated batch file to build and install in the selected location
    (typically C:\Program Files\libpqxx), asking for administrator
@@ -23,15 +24,22 @@ Studio](#easy-pqxx-batch-build-for-visual-studio) to jump right in with:
 
 Additionally various configuration solving selections can be made, for
 example if you have more than one PostgreSQL library or want to compile for
-more than one version of Visual Studio.
+more than one version of Visual Studio. Sometimes the basic CMake default
+process does not work out with an ideal result.
 
 Notes
 -----
 
-The new libpqxx version 7 and beyond can most easily be built for Windows
-Visual Studio using the "CMake" build process. Since version 7 requires C++
-17 standard, to build for Microsoft Visual Studio, the 2017 or later is
-required.
+The new [libpqxx](http://pqxx.org/development/libpqxx/) version 7 and
+beyond can most easily be built for Windows Visual Studio using the "CMake"
+build process. Since version 7 requires C++ 17 standard, to build for
+Microsoft Visual Studio, the 2017 version of Visual Studio or later is
+required. And of course you would start with downloading the [source code
+on GitHub](https://github.com/jtv/libpqxx) for the version of libpqxx that
+is right for you. In this explanation the `libpqxx-master` is the current
+development version, and the release versions have names like
+`libpqxx-7.0.0`, which is the earliest version that requires CMake to
+build.
  
 CMake is a wonderful "make" like system that runs on a large variety of
 operating systems. This allows a single build methodology to be used by the
@@ -43,14 +51,14 @@ large number of targets, some problems remain for the specific installation
 on Windows operating system using Visual Studio compiler.
 
 CMake is available for several compilers for Windows, including Microsoft
-Visual Studio. Only Visual Studio 2017 and later support the C++ 17
-standard required by libpqxx 7. And libpqxx version 7 can most easily be
-compiled for Visual Studio using the CMake build process.
+Visual Studio. Only the 2017 and later versions of Visual Studio support
+the C++ 17 standard required by libpqxx 7. And libpqxx version 7 can most
+easily be compiled for Visual Studio using the CMake build process.
  
-The methods here show how to get past Windows install problems if they
-occur for you, and a configurable batch file is presented which will fully
-automate the installation of the libpqxx library with options and features
-discussed in the introduction.
+The methods here show how to install in Windows, and get past Windows
+install problems if they occur for you. A configurable batch file is
+presented which will fully automate the installation of the libpqxx library
+with options and features discussed in the introduction.
 
 Basics of the Cmake Build for Visual Studio
 -------------------------------------------
@@ -58,16 +66,19 @@ Basics of the Cmake Build for Visual Studio
 You can do the basic CMake build process without using the batch file and
 advanced features, and understand the underlying steps, according to these
 instructions. This will build and install only one configuration, and can't
-be directly placed in a privileged location.
+be directly placed in a privileged location like `C:\Program Files`.
  
 In my opinion the best way to build a static libpqxx library on Windows for
 Visual Studio is an "out-of-source build" using CMake, in which source and
 build files are subdirectories of a top-level directory. (Check that your
-version of CMake is up to date. The minimum CMake version should be 3.17.1
-and the latest is preferred.) In this method you put the input source files
-subdirectory (`libpqxx-master` or `libpqxx-<version>`) into the top-level
-directory. Then in this top-level directory execute the following two
-commands:
+[version of CMake](https://cmake.org/) is up to date. The minimum CMake
+version should be 3.17.1 and the latest is preferred. And of course a late
+version of [PostgreSQL
+database](https://www.postgresql.org/download/windows/) must also be
+installed, version 12 preferred but at least version 10.) In this method
+you put the input source files subdirectory (`libpqxx-master` or
+`libpqxx-<version>`) into the top-level directory. Then in this top-level
+directory execute the following two commands:
 
 ```
 cmake -S libpqxx-master -B build -DCMAKE_INSTALL_PREFIX="libpqxx"
@@ -89,21 +100,34 @@ Then
 cmake --build build --target INSTALL
 ```
 
-will build the projects, including copying the final installation files
-into the libpqxx subdirectory of your build directory, as previously
-established. That libpqxx subdirectory can be manually copied into the
-`C:\Program Files` directory if desired, to give it a standardized location
-that may be expected on Windows. A manual copy wil ask for administrative
-rights.
+will build the projects using the native Visual Studio tools, including
+copying the final installation files into the libpqxx subdirectory of your
+build directory, as previously established. That libpqxx subdirectory can
+be manually copied into the `C:\Program Files` directory if desired, to
+give it a standardized location that may be expected on Windows. A manual
+copy will ask for administrative rights.
 
-A version of PostgreSQL must be installed on the build computer, at least
-the libraries must be installed. See the notes on additional flags below if
-the first cmake command cannot locate the correct PostgreSQL library.
+That last step is actually two separate actions, and they can also be
+accomplished by using the native Microsoft build tools directly within the
+build that is configured in that first CMake step. That Microsoft Visual
+Studio solution, called `libpqxx.sln` will contain projects to build the
+library and to organize the generated files into an "install" directory.
+That final `INSTALL` step exists as a project in the Visual Studio
+solution, but actually just calls back to the CMake system to script the
+"installation" into an organized output subdirectory. The `--target
+INSTALL` flag triggers that final `INSTALL` step, which depends upon the
+building of the library.
 
-One way to automate this build process is to copy the following lines and paste
-into a good programming editor, which will fix any Windows new line problems.
-Then save as `build.bat` batch script file, into your top-level directory. Click
-on the batch file to automate the build process:
+A version of PostgreSQL [must be installed on the build
+computer](https://www.postgresql.org/download/windows/), at least the
+libraries must be installed, in order to build the libpqxx library. See the
+notes on additional flags below if the first CMake command cannot locate
+the correct PostgreSQL library automatically.
+
+One way to automate this build process is to copy the following lines and
+paste into a good programming editor, which will fix any Windows new line
+problems. Then save as `build.bat` batch script file, into your top-level
+directory. Click on the batch file to automate the build process:
 
 ```bat
 REM Automated build of libpqxx placing install files in libpqxx subdirectory.
@@ -123,10 +147,19 @@ installed). The architecture and generator parameter values must be exactly
 as shown. Use `-DPostgreSQL_ROOT="C:\Program Files\PostgreSQL\12"`   to
 select the version of PostgreSQL at the specified location. To compile for
 Win32, the `"C:\Program Files (x86)\PostgreSQL\10"` version of libpq will
-probably be required from the x86 directory (and include `-A Win32`).
+probably be required from the x86 directory (and include `-A Win32`). These
+flags can also be added to the first cmake line in the example below.
 
 The second (build) cmake command can also have: `--config Release` to
 switch the install from a Debug to a Release configuration.
+
+The build cmake line can also have, at the very end, `--
+/property:CharacterSet=Unicode` to change the character set from MultiByte
+to Unicode. That flag (including the `--` separated by spaces at the end
+before the added flag) can also be applied in the 2nd and 3rd cmake build
+lines in the example below to change the character set, and the added flag
+is passed directly to the native compiler tool without cmake interpreting
+it.
 
 A slightly more complex sequence of commands will build (completely
 separate) Debug and Release installations:
@@ -140,16 +173,45 @@ if %errorlevel%==0  cmake --install build --config Debug   --prefix "libpqxx/Deb
 if %errorlevel%==0  cmake --install build --config Release --prefix "libpqxx/Release"
 pause
 ```
+See the notes above for added flags that can be used in this example as
+well. (Note most flags listed above go on the first cmake line, but the
+character set flags go at the end of the two `--build` lines.)
 
-If you wanted the final installation in the `C:\Program Files\libpqxx`
-directory, you could just copy and paste the libpqxx subdirectory created
-above into your Program Files directory--and Windows will ask for
-permissions. 
+If you copy the `basic_libpqxx.props` property sheet from this repository
+to the `libpqxx` subdirectory created above, and edit line 17 to correct
+the location of the PostgreSQL library if necessary, then you can include
+that property sheet in your new applications. This means you don't have to
+manually enter the required lists of libraries and their locations into
+your programs to use the new library. Just use the Property Manager tab in
+Visual Studio, and right click on project to select `Add Existing Property
+Sheet...` to incorporate that. You should not have errors in include files
+or libraries in your new application regarding libpqxx.
+
+If you want to automatically copy the required DLLs from PostgreSQL into
+your executable directory in your new project, then also add the
+`basic_DLL.props` property sheet to your project configurations. That
+property page should be saved in the libpqxx subdirectory also, and next to
+that file add a `bin` subdirectory into which you copy needed DLL files
+from PostgreSQL as you discover them. 
+
+Each time you run your application it will probably ask for a DLL file,
+until you fill out the entire set needed and build them into the executable
+directory. For version 12 PostgreSQL, x64, the following list of DLL files
+was needed: `libpq.dll` `libcrypto-1_1-x64.dll` `libiconv-2.dll`
+`libintl-8.dll` `libssl-1_1-x64.dll`. For version 10, Win32, the files are
+`libpq.dll` `libcrypto-1_1.dll` `libiconv-2.dll` `libintl-8.dll`
+`libssl-1_1.dll`.
+
+
+If you want the final installation of libpqxx in the `C:\Program
+Files\libpqxx` directory, you could just copy and paste the `libpqxx`
+subdirectory created above into your Program Files directory--and Windows
+will ask for permissions. 
 
 Easy-PQXX Batch Build for Visual Studio
 ---------------------------------------
 
-The batch file 'Easy-PQXX.bat' supplied here does basically the same thing
+The batch file `Easy-PQXX.bat` supplied here does basically the same thing
 as the last example above, building libpqxx with both Release and Debug
 libraries, but also creates appropriate property sheet for use of the
 library, installs the libraries and DLLs in a standardized location
@@ -175,9 +237,9 @@ top level directory for the install.
 
 **Please do not change the operations sections of this batch file! This
 batch file can recursively run itself as administrator for the last
-installation step (which just xcopy to place files), but that gives the
-batch file privileges to do almost anything. Making changes if you do not
-completely understand them can have unexpected results.**
+installation step (which just uses `xcopy` to place files), but that gives
+the batch file privileges to do almost anything. Making changes if you do
+not completely understand them can have unexpected results.**
 
 To activate the batch file (in the top-level subdirectory for the project)
 just click (or double click) the file. It will open in a command window,

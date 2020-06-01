@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    This is a property sheet to be included in MSVS projects of any
+    application. Use "View|Property Manager" and choose "Add Existing
+    Property Sheet..." from the context menu to add it from the IDE.
+    A 'bin' subdirectory must be present at the same level with DLLs,
+    which will be copied into the executable directory of the application.
+  -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>XCOPY "$(MSBuildThisFileDirectory)bin\*.DLL" "$(TargetDir)" /D /K /Y</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup />
+</Project>
