@@ -213,12 +213,12 @@ IF EXIST "%POSTGRES_LOCATION%" (
 if %POSTGRES_VERSION% equ 12 (
     set POSTGRES_DLLS=libpq.dll libcrypto-1_1-x64.dll libiconv-2.dll libintl-8.dll libssl-1_1-x64.dll
 ) else if %POSTGRES_VERSION% equ 11 (
-    set POSTGRES_DLLS=libpq.dll 
+    set POSTGRES_DLLS=libpq.dll libcrypto-1_1-x64.dll libiconv-2.dll libintl-8.dll libssl-1_1-x64.dll
 ) else if %POSTGRES_VERSION% equ 10 (
     if "%PLATFORM%" equ "x64" (
-        set POSTGRES_DLLS=libpq.dll 
+        set POSTGRES_DLLS=libpq.dll libcrypto-1_1-x64.dll libiconv-2.dll libintl-8.dll libssl-1_1-x64.dll
 	) else (
-        set POSTGRES_DLLS=libpq.dll libintl-8.dll libssl-1_1.dll libcrypto-1_1.dll libiconv-2.dll
+        set POSTGRES_DLLS=libpq.dll libcrypto-1_1.dll libiconv-2.dll libintl-8.dll libssl-1_1.dll
 	)
 ) else (
     echo Don't have list of DLLs for PostgreSQL version %POSTGRES_VERSION%.
