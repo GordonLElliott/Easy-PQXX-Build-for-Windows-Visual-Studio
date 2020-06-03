@@ -621,6 +621,12 @@ echo Start build: %time% >> build_time_log.txt
 :: "INSTALL" project will be changed to a temporary directory in case the
 :: user starts that process from the Visual Studio IDE.
 
+:: Some (additional) flags for use in this step:
+:: -DSKIP_BUILD_TEST=on skips compiling libpqxx's tests.
+:: -DBUILD_SHARED_LIBS=on to build a shared library.
+:: -DBUID_SHARED_LIBS=off to build a static library.
+:: -DBUILD_DOC=on to include documentation in the build.
+
 :: This cmake step constructs the Visual Studio solution, without compiling
 :: projects:
 cmake %VERBOSE_FLG% -S %SOURCE_DIRECTORY% -B "%WORK_BUILD%" %GENERATOR_FLG% %PLATFORM_FLG% %HOST_FLG% %PSQLROOT_FLG% %PSQLOC_FLGS% -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -DCMAKE_INSTALL_PREFIX="%WORK_INSTALL%\temporary"

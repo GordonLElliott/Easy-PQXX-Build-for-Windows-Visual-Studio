@@ -1,4 +1,4 @@
-Easy-PQXX Build for Windows Visual Studio (0.0.4)
+Easy-PQXX Build for Windows Visual Studio (0.0.5)
 -------------------------------------------------
 
 [PQXX](http://pqxx.org/development/libpqxx/) is the C++ connector library
@@ -33,7 +33,7 @@ Notes
 The new [libpqxx](http://pqxx.org/development/libpqxx/) version 7 and
 beyond can most easily be built for Windows Visual Studio using the "CMake"
 build process. Since version 7 requires C++ 17 standard, to build for
-Microsoft Visual Studio, the 2017 version of Visual Studio or later is
+Microsoft Visual Studio the 2017 version of Visual Studio or later is
 required. And of course you would start with downloading the [source code
 on GitHub](https://github.com/jtv/libpqxx) for the version of libpqxx that
 is right for you. In this explanation the `libpqxx-master` is the current
@@ -51,9 +51,10 @@ large number of targets, some problems remain for the specific installation
 on Windows operating system using Visual Studio compiler.
 
 CMake is available for several compilers for Windows, including Microsoft
-Visual Studio. Only the 2017 and later versions of Visual Studio support
-the C++ 17 standard required by libpqxx 7. And libpqxx version 7 can most
-easily be compiled for Visual Studio using the CMake build process.
+Visual Studio. If you are using Visual Studio, only the 2017 and later
+versions support the C++ 17 standard required by libpqxx 7. And libpqxx
+version 7 can most easily be compiled for Visual Studio using the CMake
+build process.
  
 The methods here show how to install in Windows, and get past Windows
 install problems if they occur for you. A configurable batch file is
@@ -65,8 +66,9 @@ Basics of the Cmake Build for Visual Studio
 
 You can do the basic CMake build process without using the batch file and
 advanced features, and understand the underlying steps, according to these
-instructions. This will build and install only one configuration, and can't
-be directly placed in a privileged location like `C:\Program Files`.
+instructions. The first example will build and install only one
+configuration, and can't be directly placed in a privileged location like
+`C:\Program Files`.
  
 In my opinion the best way to build a static libpqxx library on Windows for
 Visual Studio is an "out-of-source build" using CMake, in which source and
@@ -75,11 +77,12 @@ build files are subdirectories of a top-level directory. (Check that your
 version should be 3.17.1 and the latest is preferred. And of course a late
 version of [PostgreSQL
 database](https://www.postgresql.org/download/windows/) must also be
-installed, version 12 preferred but at least version 10.) In this method
-you put the input source files subdirectory (`libpqxx-master` or
-`libpqxx-<version>`) into the top-level directory. Then in this top-level
-directory execute the following two commands (adjusting the name of the
-input source accordingly):
+installed, version 12 is preferred but at least version 10. Version 10 is
+the last with a 32 bit Win32 installation.) In this method you put the
+input source files subdirectory (`libpqxx-master` or `libpqxx-<version>`)
+into the top-level directory. Then in this top-level directory execute the
+following two commands (adjusting the name of the input source
+accordingly):
 
 ```
 cmake -S libpqxx-master -B build -DCMAKE_INSTALL_PREFIX="libpqxx"
@@ -108,7 +111,7 @@ be manually copied into the `C:\Program Files` directory if desired, to
 give it a standardized location that may be expected on Windows. A manual
 copy will ask for administrative rights.
 
-That last step is actually two separate actions, and they can also be
+That last step is actually two separate actions, and they could also be
 accomplished by using the native Microsoft build tools directly within the
 build that is configured in that first CMake step. That Microsoft Visual
 Studio solution, called `libpqxx.sln` will contain projects to build the
@@ -117,7 +120,8 @@ That final `INSTALL` step exists as a project in the Visual Studio
 solution, but actually just calls back to the CMake system to script the
 "installation" into an organized output subdirectory. The `--target
 INSTALL` flag triggers that final `INSTALL` step, which depends upon the
-building of the library.
+building of the library. (Since this is a "make" system, the entire library
+build is triggered by this one command, followed by the install process.)
 
 A version of PostgreSQL [must be installed on the build
 computer](https://www.postgresql.org/download/windows/), at least the
@@ -138,7 +142,10 @@ pause
 ```
 
 Any changes can be made by clicking the batch build file again and only
-necessary changes will be compiled, as is normal for a "make" process.
+necessary changes will be compiled, as is normal for a "make" process. Once
+again, use `libpqxx-master` for the most recent build of libpqxx, or change
+that to match the `libpqxx-<version>` number you are using, here and in the
+examples that follow.
  
 Flags that can be added on the first `cmake` line include: `-A x64` or `-A
 Win32` These will select the target architecture as 64 or 32 bit. `-G
@@ -150,7 +157,16 @@ as shown. Use
 to select the version of PostgreSQL at the specified location. To compile
 for Win32, the `"C:\Program Files (x86)\PostgreSQL\10"` version of libpq
 will probably be required from the x86 directory (and include `-A Win32`).
-These flags can also be added to the first `cmake` line in the example below.
+These flags can also be added to the first `cmake` line in the example
+below.
+
+Some additional flags that can be used on the first `cmake` command line,
+as noted in libpqxx's `BUILDING-cmake.md` document: `-DSKIP_BUILD_TEST=on`
+skips compiling libpqxx's tests. `-DBUILD_SHARED_LIBS=on` to build a shared
+library. `-DBUILD_SHARED_LIBS=off` to build a static library.
+`-DBUILD_DOC=on` to include documentation in the build. (None of this last
+set of flags have been implemented in the current version of the
+`Easy-PQXX` batch file presented below, by the way.)
 
 The second (build) `cmake` command can also have: `--config Release` to
 switch the install from a Debug to a Release configuration.
