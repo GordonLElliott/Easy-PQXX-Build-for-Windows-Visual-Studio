@@ -163,10 +163,10 @@ below.
 Some additional flags that can be used on the first `cmake` command line,
 as noted in libpqxx's `BUILDING-cmake.md` document: `-DSKIP_BUILD_TEST=on`
 skips compiling libpqxx's tests. `-DBUILD_SHARED_LIBS=on` to build a shared
-library. `-DBUILD_SHARED_LIBS=off` to build a static library.
-`-DBUILD_DOC=on` to include documentation in the build. (None of this last
-set of flags have been implemented in the current version of the
-`Easy-PQXX` batch file presented below, by the way.)
+library, a DLL version of libpqxx library. `-DBUILD_SHARED_LIBS=off` to
+build a static library. `-DBUILD_DOC=on` to include documentation in the
+build. (None of this last set of flags have been implemented in the current
+version of the `Easy-PQXX` batch file presented below, by the way.)
 
 The second (build) `cmake` command can also have: `--config Release` to
 switch the install from a Debug to a Release configuration.
