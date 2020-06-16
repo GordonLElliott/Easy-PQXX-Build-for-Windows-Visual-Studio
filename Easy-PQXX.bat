@@ -1,5 +1,5 @@
 REM Build and install pqxx library using CMake and source code files.
-REM Version 0.0.3
+REM Version 0.0.6
 :: ************************************************************************
 :: This batch file builds and then installs the pqxx library (libpqxx), for
 :: Microsoft Visual Studio on Windows. It should work for any version of
@@ -96,6 +96,43 @@ SET PQXX_VERSION=master
 SET POSTGRES_VERSION=12
 REM SET POSTGRES_VERSION=11
 REM SET POSTGRES_VERSION=10
+
+:: The EASY_PATCH variable will apply a list of adaptations to the program
+:: that do not come as built by CMake. Mostly this is to fix variables that
+:: CMake does not correctly set in Windows. If the EASY_PATCH code is not
+:: defined, then the CMake build will regenerate from master source files
+:: each time this batch file is activated. EASY_PATCH does not modify the
+:: source code, it only modifies the CMake generated configuration files.
+
+:: To use, set EASY_PATCH to a list of patch codes to be applied:
+:: 0 = Stop after constructing the Visual Studio solution for manual
+:: update. (Only put this at the end--it will stop at that point!)
+:: 101 = Set PQXX_HAVE_CHARCONV_FLOAT variable in the library.
+:: 102 = Set PQXX_HAVE_CHARCONV_INT variable in the library.
+:: NOTE setting those two variables is missed by the CMake on Windows, even
+:: though the referred capabilities are present. Setting these allows much
+:: more efficient string processing of floating and integral types.
+
+:: Leave EASY_PATCH completely undefined and the CMake reconstructs the
+:: solution each time the batch file is called, without  modifications.
+
+REM This setting causes build to stop for patching after first step.
+REM SET EASY_PATCH=0
+
+:: Also adding 0 to the end of the EASY_PATCH list will cause the batch
+:: file to stop after the initial patching operations, to allow manual
+:: inspection or update after installing patches. Just run the batch file
+:: again to complete the build and installation.
+
+:: This set defines character conversions that make libpqxx efficient. The
+:: config-internal-compiler.h, config-internal-libpq.h,
+:: config-public-compiler.h files will have additional
+:: PQXX_HAVE_CHARCONV_FLOAT and PQXX_HAVE_CHARCONV_INT flags set.
+REM set efficiency settings, consistent with libpqxx version 7.1.2:
+REM SET EASY_PATCH=101 102
+
+
+
 
 
 :: leave these lines in... PROGRAMFILES block.... -------------------->> ::
@@ -625,14 +662,43 @@ echo Start build: %time% >> build_time_log.txt
 :: -DSKIP_BUILD_TEST=on skips compiling libpqxx's tests.
 :: -DBUILD_SHARED_LIBS=on to build a shared library.
 :: -DBUID_SHARED_LIBS=off to build a static library.
-:: -DBUILD_DOC=on to include documentation in the build.
+:: [-DBUILD_DOC=on to include documentation in the build.]
+:: -DBUILD_DOC=on to build the documentation using Doxygen. (Documentation
+:: is included in the build in either case.)
 
-:: This cmake step constructs the Visual Studio solution, without compiling
-:: projects:
-cmake %VERBOSE_FLG% -S %SOURCE_DIRECTORY% -B "%WORK_BUILD%" %GENERATOR_FLG% %PLATFORM_FLG% %HOST_FLG% %PSQLROOT_FLG% %PSQLOC_FLGS% -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -DCMAKE_INSTALL_PREFIX="%WORK_INSTALL%\temporary"
+:: This first CMake step constructs the Visual Studio solution, without
+:: compiling projects. But it also applies patches every time the files are
+:: built, if EASY_PATCH variable is defined. So if not defined, always run
+:: the initial CMake build step and let CMake decide what changes are
+:: needed. If EASY_PATCH is defined, only run CMake if the build directory
+:: is not defined, and apply any patch one time after the build directory
+:: is constructed.
+
+SET WILL_CMAKE_FIRST=1
+if defined EASY_PATCH (
+    if exist "%WORK_BUILD%\" (
+        SET WILL_CMAKE_FIRST=0
+	)
+)
+
+if %WILL_CMAKE_FIRST% neq 0 (
+    cmake %VERBOSE_FLG% -S %SOURCE_DIRECTORY% -B "%WORK_BUILD%" %GENERATOR_FLG% %PLATFORM_FLG% %HOST_FLG% %PSQLROOT_FLG% %PSQLOC_FLGS% -DCMAKE_BUILD_TYPE=%CMAKE_BUILD_TYPE% -DCMAKE_INSTALL_PREFIX="%WORK_INSTALL%\temporary"
+    if %errorlevel% neq 0 goto :error
+    if defined EASY_PATCH (
+       if "%EASY_PATCH%"=="" (
+           echo *******************************************************************
+           echo *** BUILD has been constructed at: "%WORK_BUILD%"
+           echo *** Stoping to allow manual patching of the code before completion.
+           echo *******************************************************************
+           goto :exiting
+	   ) else (
+           call :doEasyPatchHeaders
+           for %%x in (%EASY_PATCH%) do call :doEasyPatch %%x
+	   )
+	)
+)
 
 
-if %errorlevel% neq 0 goto :error
 :: Note that the IDE opens as Debug configuration no matter what. Note that
 :: the IDE projects are configured with MultiByte character set, no matter
 :: which setting was used for build operations by this batch file. However
@@ -684,12 +750,12 @@ echo **********************************************************************
 ::     --clean-first to contradict that.
 
 if %BUILD_RELEASE% neq 0 (
-    cmake --build %WORK_BUILD% %VERBOSE_FLG% --config Release %CORES_FLG% %PASS_OPTIONS_FLG% %CHARSET_FLG%
+    cmake --build %WORK_BUILD% %VERBOSE_FLG% --config Release --target pqxx %CORES_FLG% %PASS_OPTIONS_FLG% %CHARSET_FLG%
     if !errorlevel! neq 0 goto :error
 )
 
 if %BUILD_DEBUG% neq 0 (
-    cmake --build %WORK_BUILD% %VERBOSE_FLG% --config Debug   %CORES_FLG% %PASS_OPTIONS_FLG% %CHARSET_FLG%
+    cmake --build %WORK_BUILD% %VERBOSE_FLG% --config Debug   --target pqxx %CORES_FLG% %PASS_OPTIONS_FLG% %CHARSET_FLG%
     if !errorlevel! neq 0 goto :error
 )
 
@@ -950,6 +1016,7 @@ echo   ^<ItemDefinitionGroup^>
 if %1 neq 0 (
 echo     ^<ClCompile^>
 echo       ^<AdditionalIncludeDirectories^>$^(MSBuildThisFileDirectory^)include;%%^(AdditionalIncludeDirectories^)^</AdditionalIncludeDirectories^>
+echo       ^<LanguageStandard^>stdcpp17^</LanguageStandard^>
 echo     ^</ClCompile^>
 echo     ^<Link^>
 echo       ^<AdditionalLibraryDirectories^>$^(MSBuildThisFileDirectory^)lib\$^(Configuration^);%%^(AdditionalLibraryDirectories^)^</AdditionalLibraryDirectories^>
@@ -967,6 +1034,48 @@ echo ^</Project^>
 )>"%~3"
 
 exit /B %errorlevel%
+
+:doEasyPatchHeaders
+:: Header comments in all the locations in which changes may be made.
+    call :doAddPQXXConfigFlags "//"
+    call :doAddPQXXConfigFlags "// Easy-PQXX adding 'EASY_PATCH' flags here:"
+    call :doAddPQXXConfigFlags "// These are added after CMake constructs solution but before compile."
+    exit /B
+
+:: Easy Patch. This takes care of CMake generated problems in Windows.
+:: :doEasyPatch patchNumber
+:doEasyPatch
+    echo patch %1
+    if %1 equ 101 (
+        call :doAddPQXXConfigFlags "#define PQXX_HAVE_CHARCONV_FLOAT"
+    ) else if %1 equ 102 (
+        call :doAddPQXXConfigFlags "#define PQXX_HAVE_CHARCONV_INT"
+    ) else if %1 equ 0 ( 
+        echo *******************************************************************
+        echo *** BUILD has been constructed at: "%WORK_BUILD%"
+        echo *** Stoping to allow manual patching of the code before completion.
+        echo *******************************************************************
+        goto :exiting
+    ) else (
+        echo **************************************************
+        echo ???   :doEasyPatch unknown code %1   ???
+        echo **************************************************
+	)
+    exit /B
+
+:: :doAddPQXXConfigFlags flag
+:: This adds flag definition to the config compiler files (3 of them),
+:: which were the result of the initial construction of the solution.
+:: Quote the line to be entered in the files as first argument. Quote will
+:: be stripped before adding to file. Try not to use any double quotes or
+:: parantheses or other characters requiring escape in batch file, or else
+:: figure out how to escape them so they work in the echo statement.
+:doAddPQXXConfigFlags
+  echo %~1>>"%WORK_BUILD%\include\pqxx\config-internal-compiler.h"
+  echo %~1>>"%WORK_BUILD%\include\pqxx\config-internal-libpq.h"
+  echo %~1>>"%WORK_BUILD%\include\pqxx\config-public-compiler.h"
+  exit /B
+
 
 :: ********************************************************************* ::
 :: Functions that return value in _ret variable...

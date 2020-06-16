@@ -93,9 +93,9 @@ SET PQXX_VERSION=master
 :: which DLL files are copied for use in the post build event in the
 :: Property Pages files. This is also used to construct the location of the
 :: PostgreSQL database installation.
-REM SET POSTGRES_VERSION=12
+SET POSTGRES_VERSION=12
 REM SET POSTGRES_VERSION=11
-SET POSTGRES_VERSION=10
+REM SET POSTGRES_VERSION=10
 
 :: The EASY_PATCH variable will apply a list of adaptations to the program
 :: that do not come as built by CMake. Mostly this is to fix variables that
@@ -129,7 +129,7 @@ REM SET EASY_PATCH=0
 :: config-public-compiler.h files will have additional
 :: PQXX_HAVE_CHARCONV_FLOAT and PQXX_HAVE_CHARCONV_INT flags set.
 REM set efficiency settings, consistent with libpqxx version 7.1.2:
-REM SET EASY_PATCH=101 102
+SET EASY_PATCH=101 102
 
 
 
@@ -164,7 +164,7 @@ echo PROGRAMFILES_64_BIT=%PROGRAMFILES_64_BIT%
 :: some input directories. Uncomment one or the other here by removing the
 :: "REM" word. Default, next, is to use the same as your operating system.
 REM SET PLATFORM=x64
-SET PLATFORM=Win32
+REM SET PLATFORM=Win32
 :: ------------------------------------------------------------------->> ::
 if not defined PLATFORM (
     if %OS_64_BIT% neq 0 (SET PLATFORM=x64) else (SET PLATFORM=Win32)

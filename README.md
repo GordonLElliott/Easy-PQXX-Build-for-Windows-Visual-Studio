@@ -1,26 +1,28 @@
-Easy-PQXX Build for Windows Visual Studio (0.0.5)
+Easy-PQXX Build for Windows Visual Studio (0.0.6)
 -------------------------------------------------
 
-[PQXX](http://pqxx.org/development/libpqxx/) is the C++ connector library
+[PQXX](http://pqxx.org/development/libpqxx/) is the official C++ client API
 for PostgreSQL. Build the libpqxx library for Windows quickly, with both
-Debug and Release configurations, install in Program Files, create property
-sheets to easily use in Visual Studio applications, with named versions for
-configurations and options. Skip past the notes to [Easy-PQXX Batch Build
-for Visual Studio](#easy-pqxx-batch-build-for-visual-studio) to jump right
-in with:
+Debug and Release configurations, install in Program Files, fix problems,
+create property sheets to easily use in Visual Studio applications, with
+named versions for configurations and options. Skip past the notes to
+[Easy-PQXX Batch Build for Visual
+Studio](#easy-pqxx-batch-build-for-visual-studio) to jump right in with:
 
 1. Automated batch file to build and install in the selected location
    (typically C:\Program Files\libpqxx), asking for administrator
    privileges if needed to copy the files.
-2. Configure for Unicode or MultiByte character sets. (For example Unicode
+2. EASY_PATCH settings for compile flags for features that are not enabled
+   by CMake, allowing more efficient code in Windows.
+3. Configure for Unicode or MultiByte character sets. (For example Unicode
    character set may be needed to interface wxWidgets in the same
    application.)
-3. Keep named installations for different configurations.
-4. One library installation with both Debug and Release compiles that
+4. Keep named installations for different configurations.
+5. One library installation with both Debug and Release compiles that
    automatically switch in Visual Studio.
-5. Property Sheets so your Visual Studio application (with both Debug and
+6. Property Sheets so your Visual Studio application (with both Debug and
    Release compiles) can be instantly configured.
-6. Gather DLLs from PostgreSQL library into your application automatically.
+7. Gather DLLs from PostgreSQL library into your application automatically.
 
 Additionally various configuration solving selections can be made, for
 example if you have more than one PostgreSQL library or want to compile for
@@ -164,9 +166,10 @@ Some additional flags that can be used on the first `cmake` command line,
 as noted in libpqxx's `BUILDING-cmake.md` document: `-DSKIP_BUILD_TEST=on`
 skips compiling libpqxx's tests. `-DBUILD_SHARED_LIBS=on` to build a shared
 library, a DLL version of libpqxx library. `-DBUILD_SHARED_LIBS=off` to
-build a static library. `-DBUILD_DOC=on` to include documentation in the
-build. (None of this last set of flags have been implemented in the current
-version of the `Easy-PQXX` batch file presented below, by the way.)
+build a static library. `-DBUILD_DOC=on` to use Doxygen to build the
+documentation (not related to whether documentation is present in the
+installation). (None of this last set of flags have been implemented in the
+current version of the `Easy-PQXX` batch file presented below, by the way.)
 
 The second (build) `cmake` command can also have: `--config Release` to
 switch the install from a Debug to a Release configuration.
@@ -220,11 +223,31 @@ was needed: `libpq.dll` `libcrypto-1_1-x64.dll` `libiconv-2.dll`
 `libpq.dll` `libcrypto-1_1.dll` `libiconv-2.dll` `libintl-8.dll`
 `libssl-1_1.dll`.
 
-
 If you want the final installation of libpqxx in the `C:\Program
 Files\libpqxx` directory, you could just copy and paste the `libpqxx`
 subdirectory created above into your Program Files directory--and Windows
 will ask for permissions. 
+
+A couple of compiling configuration flags that CMake does not set in
+Windows, even though the features are available, are as follows:
+```cpp
+#define PQXX_HAVE_CHARCONV_FLOAT
+#define PQXX_HAVE_CHARCONV_INT
+```
+In your `build\include\pqxx` directory, are three files:
+```
+config-internal-compiler.h
+config-internal-libpq.h
+config-public-compiler.h
+```
+Adding those definitions at the end of each of those three files will
+enable efficiency features in libpqxx. As of version 7.1.2 "master" in
+development on June 15, 2020, some changes are needed before these
+efficiency modifications will work. But after those fixes are made so the
+library compiles for Visual Studio, those definitions can be added.
+
+To make those changes, edit the files after the very first CMake step which
+constructs the Visual Studio solution files in your `build` directory.
 
 Easy-PQXX Batch Build for Visual Studio
 ---------------------------------------
@@ -234,22 +257,29 @@ as the last example above, building libpqxx with both Release and Debug
 libraries, but also creates appropriate property sheet for use of the
 library, installs the libraries and DLLs in a standardized location
 (usually C:\Program Files\libpqxx), and automatically asks for admin
-privileges. It places the library in a named subdirectory of libpqxx
-install, so that variously configured installs have different names.
-Furthermore it organizes the installation as a single directory with
-include and 'share' directories (with documentation), but the lib directory
-has both a Debug and Release subdirectory with the respective library. (The
-simplified example above wound up with two copies of the include and the
-documentation directories.)
+privileges. Optionally the patches needed to implement efficiency changes
+can be applied between constructing the solution and the compiling it. It
+places the library in a named subdirectory of libpqxx install, so that
+variously configured installs have different names. Furthermore it
+organizes the installation as a single directory with include and 'share'
+directories (with documentation), but the lib directory has both a Debug
+and Release subdirectory with the respective library. (The simplified
+example above wound up with two copies of the include and the documentation
+directories.)
 
-Two other batch files are provided in this repository:
-`Easy-PQXX-x64Unicode.bat` is pre-configured for Unicode character set.
-`Easy-PQXX-Win32.bat` is pre-configured for Win32 (x86) compiling. The
-latter has the typical 32 bit PostgreSQL location selected. In both cases
-the user may have to do some configuration changes to adapt the use. The
-`Easy-PQXX.bat` is always the master copy, and these are derived by copying
-that and changing one or more settings. If there is ever a disparity, the
-one with no suffix is the maintained copy.
+Three other batch files are provided in this repository:
+`Easy-PQXX-patch.bat` is pre-configured to patch the CMake generated files
+with efficiency modifications, consistent with the latest development copy
+of libpqxx-master. `Easy-PQXX-x64Unicode.bat` is pre-configured for Unicode
+character set as well as the efficiency modifications in a 64 bit
+compilation. (Useful along with wxWidgets library.) `Easy-PQXX-Win32.bat`
+is pre-configured for Win32 (x86) compiling. The latter has the typical 32
+bit PostgreSQL location selected. 
+
+In all cases the user may have to make some configuration changes to adapt
+the use. The `Easy-PQXX.bat` is always the master copy, and the others are
+derived by copying and changing one or more of the settings. If there is
+ever a disparity, `Easy-PQXX.bat` is the maintained master copy.
 
 This batch file has a top section to allow the user to configure the build.
 As noted in the batch file, it should be copied to the top level directory
@@ -268,6 +298,9 @@ installation step (which just uses `xcopy` to place files), but that gives
 the batch file privileges to do almost anything. Making changes if you do
 not completely understand them can have unexpected results.**
 
+Please do change the configuration variables in the top section to match
+your requirements. Each variable has an explanation.
+
 To activate the batch file (in the top-level subdirectory for the project)
 just click (or double click) the file. It will open in a command window,
 and has a pause at the end so you can read the results. After build it may
@@ -276,17 +309,19 @@ Program Files directory. After giving permission, a yellow background
 command window is doing the final copy. Then hit a key to end each window,
 after checking for proper operation.
  
-This batch file first configures the build, compiles the libraries (both
-Release and Debug as selected), but in separate local pre-installation work
-directories. The CMake methods are only configured to do this as separate
-file groupings. Then the batch file copies the separate installations into
-a singe coherent directory with just one include subdirectory, just one
-'share' subdirectory with documentation, and with a lib directory that is
-subdivided by Debug and Release folders. Another subdirectory, 'bin' is
-added to contain the external PostgreSQL libraries and DLL files required
-for applications using the libpqxx library. Property page files are also
-provided, which can be used in Visual Studio projects to easily reference
-the libraries and DLL files needed.
+This batch file first configures the build, applies patches to the
+configuration if specified, compiles the libraries (both Release and Debug
+as selected), but in separate local pre-installation work directories. The
+CMake methods are only configured to do this as separate file groupings.
+
+Then the batch file copies the separate installations into a singe coherent
+directory with just one include subdirectory, just one 'share' subdirectory
+with documentation, and with a lib directory that is subdivided by Debug
+and Release folders. Another subdirectory, 'bin' is added to contain the
+external PostgreSQL libraries and DLL files required for applications using
+the libpqxx library. Property page files are also provided, which can be
+used in Visual Studio projects to easily reference the libraries and DLL
+files needed.
 
 Using the PQXX Library
 ----------------------
