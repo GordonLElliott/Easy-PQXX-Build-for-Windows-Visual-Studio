@@ -1017,6 +1017,7 @@ if %1 neq 0 (
 echo     ^<ClCompile^>
 echo       ^<AdditionalIncludeDirectories^>$^(MSBuildThisFileDirectory^)include;%%^(AdditionalIncludeDirectories^)^</AdditionalIncludeDirectories^>
 echo       ^<LanguageStandard^>stdcpp17^</LanguageStandard^>
+echo       ^<ConformanceMode^>false^</ConformanceMode^>
 echo     ^</ClCompile^>
 echo     ^<Link^>
 echo       ^<AdditionalLibraryDirectories^>$^(MSBuildThisFileDirectory^)lib\$^(Configuration^);%%^(AdditionalLibraryDirectories^)^</AdditionalLibraryDirectories^>
